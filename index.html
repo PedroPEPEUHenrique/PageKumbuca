@@ -429,7 +429,7 @@
     </div>
 
     <small class="footer-legal">
-      <span>© 2026 Kumbuca Natas de Belém · MEI</span>
+      <span>© 2026 Kumbuca Natas de Belém</span>
       <span>Receita de Belém, Lisboa. Feita em Aparecida de Goiânia.</span>
     </small>
   </div>
@@ -463,6 +463,46 @@
       menu.classList.remove("is-open");
       botaoMenu.setAttribute("aria-expanded", "false");
     }
+  });
+
+  var perguntas = document.querySelectorAll(".faq details");
+  var semMovimento = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  function animarResposta(pergunta, abrindo){
+    var resposta = pergunta.querySelector(".faq-answer");
+
+    if (semMovimento.matches || !resposta.animate) {
+      pergunta.open = abrindo;
+      return;
+    }
+    if (resposta.animacao) { resposta.animacao.cancel(); }
+
+    var espaco = getComputedStyle(resposta).paddingBottom;
+    if (abrindo) { pergunta.open = true; }
+    pergunta.classList.toggle("is-fechando", !abrindo);
+
+    var fechado = { height: "0px", paddingBottom: "0px", opacity: 0 };
+    var aberto = { height: resposta.scrollHeight + "px", paddingBottom: espaco, opacity: 1 };
+
+    resposta.animacao = resposta.animate(abrindo ? [fechado, aberto] : [aberto, fechado], {
+      duration: abrindo ? 280 : 200,
+      easing: abrindo ? "cubic-bezier(.2,.7,.3,1)" : "ease-in"
+    });
+    resposta.animacao.onfinish = function(){
+      if (!abrindo) { pergunta.open = false; }
+      pergunta.classList.remove("is-fechando");
+    };
+  }
+
+  perguntas.forEach(function(pergunta){
+    pergunta.querySelector("summary").addEventListener("click", function(evento){
+      evento.preventDefault();
+      var abrindo = !pergunta.open;
+      perguntas.forEach(function(outra){
+        if (outra !== pergunta && outra.open) { animarResposta(outra, false); }
+      });
+      animarResposta(pergunta, abrindo);
+    });
   });
 </script>
 
